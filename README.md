@@ -356,7 +356,7 @@ or using a config YAML file instead:
 ### Do I need to load all the OpenERP models in my Ruby application?
 
 You can load only some OpenERP models (not all), which is faster and better in term of memory/security:
-    $ Ooor.reload!({:models => [res.partner, product.template, product.product], :url => 'http://localhost:8069/xmlrpc', :database => 'mybase', :username => 'admin', :password => 'admin'})
+    $ Ooor.reload!({:models => ['res.partner', 'product.template', 'product.product'], :url => 'http://localhost:8069/xmlrpc', :database => 'mybase', :username => 'admin', :password => 'admin'})
 
 ### Isn't OOOR slow?
 
