@@ -328,6 +328,32 @@ describe Ooor do
       end
     end
 
+    describe "Each by packets" do
+      it "should returns the same total number of lines as find(:all) method" do
+        partners = ResPartner.find(:all, :fields=>["id", "name"])
+        each_partners_size = ResPartner.each_by_packet(:per_packet => 5, :fields=>["id", "name"])
+        partners.size.should == each_partners_size
+      end
+
+      it "should execute the each block as many times as lines count" do
+        each_count = 0
+        each_partners_size = ResPartner.each_by_packet(:per_packet => 5, :fields=>["id", "name"]) do |partner|
+          each_count += 1
+        end
+        each_count.should == each_partners_size
+      end
+
+      it "should be able to use same arguments as find method" do
+        each_partners_count = ResPartner.each_by_packet(:per_packet => 5,
+                                                        :domain => [['supplier', '=', 1],['active','=',1]],
+                                                        :fields => ["id", "name"],
+                                                        :context => {'lang' => 'es_ES'}) do |partner|
+          partner.name.should_not be_nil
+        end
+      end
+
+    end
+
   end
 
 

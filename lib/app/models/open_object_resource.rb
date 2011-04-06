@@ -178,6 +178,27 @@ module Ooor
         self.rpc_execute(method_symbol.to_s, *arguments)
       end
 
+      # Returns rows per slices. Useful to get/process something on all rows from a big table without fulfill the memory by using all(*args)
+      # You can pass in all the same arguments to this method as you can to find(*args)
+      # With an additional argument :per_packet to specify the number of items to get by packet
+      # usage : ResUsers.each_by_packet(:per_packet => 2) {|user| puts user.name}
+      # usage : ResUsers.each_by_packet(:per_packet => 2, :domain => [['name', 'ilike', 'Guewen']]) {|user| puts user.name}
+      def each_by_packet(*arguments, &block)
+        options = arguments.slice!(0) || {}
+        per_packet = options[:per_packet] || 100 # process 100 by 100 items by default
+        all_ids_options = options.merge(:fields => ['id'])
+        all_ids = find_every(all_ids_options).map { |item| item.id }
+        all_count = all_ids.length
+        at_a_time = 0..(per_packet-1)
+        begin
+          packet_ids = all_ids.slice!(at_a_time)
+          find_every(:domain => [['id', 'in', packet_ids]],
+                     :fields => options[:fields] || [],
+                     :context => options[:context] || {},
+                     :order => options[:order] || false).each &block
+        end until all_ids.empty?
+        all_count
+      end
 
       # ******************** finders low level implementation ********************
       private
