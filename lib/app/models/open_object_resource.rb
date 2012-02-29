@@ -22,6 +22,7 @@ require 'app/models/uml'
 require 'app/models/type_casting'
 require 'app/models/relation'
 require 'app/models/serialization'
+require 'app/models/dynamic_finder_match.rb'
 
 module Ooor
   class OpenObjectResource < ActiveResource::Base
@@ -170,7 +171,35 @@ module Ooor
         [wizard_id, cast_answer_to_ruby!(@ooor.get_rpc_client("#{(@database && @site || @ooor.base_url)}/wizard").call("execute",  @database || @ooor.config[:database], @user_id || @ooor.config[:user_id], @password || @ooor.config[:password], wizard_id, params, step, context))]
       end
 
-      def method_missing(method_symbol, *arguments)        
+      def _dynamic_find(match, arguments)
+        options = {}
+        if arguments.last.is_a? Hash
+          options = arguments.last
+        end
+        attributes = match.attribute_names
+        if attributes[0] == 'xml_id' || attributes[0] == 'id'
+          return self.find(arguments[0], options)
+        else
+          domain = []
+          attributes.length.times do | index |
+            domain.push([attributes[index] ,'=', arguments[index]])
+          end
+          options.merge!({:domain => domain})
+          res = self.find(match.finder, options)
+          if match.bang?
+            unless res
+              raise "Could not find #{self.class} with for domain #{domain.inspect}"
+            end
+          end
+          return res
+        end
+      end
+
+      def method_missing(method_symbol, *arguments)
+        match = DynamicFinderMatch.match(method_symbol.to_s)
+        if match
+          return send(:_dynamic_find, match, arguments)
+        end
         raise RuntimeError.new("Invalid RPC method:  #{method_symbol}") if [:type!, :allowed!].index(method_symbol)
         self.rpc_execute(method_symbol.to_s, *arguments)
       end
