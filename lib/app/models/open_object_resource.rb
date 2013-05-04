@@ -366,7 +366,9 @@ module Ooor
 
     #compatible with the Rails way but also supports OpenERP context
     def update(context={}, reload=true)
-      rpc_execute('write', [self.id], to_openerp_hash!, context)
+      data = self.to_openerp_hash!
+      data.delete("write_date") #will be set by server
+      rpc_execute('write', [self.id], data, context)
       reload_fields(context) if reload
       @persisted = true
     end
