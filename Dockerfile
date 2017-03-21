@@ -15,6 +15,6 @@ RUN git clone https://github.com/OCA/maintainer-quality-tools.git ${HOME}/mainta
 WORKDIR $HOME/odoo-$VERSION
 
 # Expose ODOO port
-EXPOSE 8096
+EXPOSE 8069
 
 CMD $HOME/odoo-$VERSION/./openerp-server --addons-path=$HOME/odoo-$VERSION/addons --db_user=travis --db_password=admin --db_host=localhost
