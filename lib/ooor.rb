@@ -93,7 +93,7 @@ module Ooor
       end
 
       def irregular_context_position(method)
-        IRREGULAR_CONTEXT_POSITIONS.merge(default_config[:irregular_context_positions] || {})[method.to_sym]
+        IRREGULAR_CONTEXT_POSITIONS.merge(default_config[:irregular_context_positions].symbolize_keys || {})[method.to_sym]
       end
 
     end

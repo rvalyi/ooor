@@ -22,9 +22,13 @@ module Ooor
         end
       end
       if defined?(Warden::Manager)
-        app.middleware.insert_after Warden::Manager, '::Ooor::Rack'
+        app.middleware.insert_after Warden::Manager, ::Ooor::Rack
       else
-        app.middleware.insert_after ActionDispatch::ParamsParser, '::Ooor::Rack'
+        if ::Rails.version < "5.0"
+          app.middleware.insert_after ActionDispatch::ParamsParser, ::Ooor::Rack
+        else
+          app.middleware.insert_after ActionDispatch::Flash, ::Ooor::Rack
+        end
       end
     end
 
