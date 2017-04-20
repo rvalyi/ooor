@@ -31,6 +31,8 @@ module Ooor
         return InvalidSessionError.new(method, faultCode, faultString, *args)
       elsif faultCode =~ /SessionExpiredException/
         return SessionExpiredError.new(method, faultCode, faultString, *args)
+      elsif faultCode =~ /UserError/
+        return UserError.new(method, faultCode, faultString, *args)
       else
         return new(method, faultCode, faultString, *args)
       end
@@ -82,6 +84,20 @@ module Ooor
   class ValueError < OpenERPServerError; end
   class InvalidSessionError < OpenERPServerError; end
   class SessionExpiredError < OpenERPServerError; end
+
+  class UserError < OpenERPServerError
+    def extract_user_error!(errors)
+      @faultCode.split("\n").each do |line|
+        extract_error_line!(errors, line) if line.index(': ')
+      end
+    end
+
+    def extract_error_line!(errors, line)
+      fields = line.split(": ")[0].split(' ').last.split(',')
+      msg = line.split(": ")[1]
+      fields.each { |field| errors.add(field.strip.to_sym, msg) }
+    end
+  end
 
   class ValidationError < OpenERPServerError
     def extract_validation_error!(errors)
