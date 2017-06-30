@@ -1,6 +1,8 @@
 require 'active_support'
 require 'active_support/core_ext/class/attribute_accessors'
 require 'active_model'
+require 'activemodel-serializers-xml'
+require 'active_model_serializers'
 
 if ActiveModel.respond_to?(:version) && ActiveModel.version.version.to_i >= 5
   begin
